@@ -21,6 +21,10 @@
   // Memories
   let memoriesEnabled = $state($preferences?.memories?.enabled ?? true);
   let memoriesDuration = $state($preferences?.memories?.duration ?? 5);
+  let memoriesShowTitle = $state($preferences?.memories?.showTitle ?? true);
+  let memoriesTitleDuration = $state($preferences?.memories?.titleDuration ?? 5);
+  let memoriesThemedEnabled = $state($preferences?.memories?.themedMemoriesEnabled ?? true);
+  let memoriesNotificationsEnabled = $state($preferences?.memories?.notificationsEnabled ?? true);
 
   // People
   let peopleEnabled = $state($preferences?.people?.enabled ?? false);
@@ -46,7 +50,14 @@
         userPreferencesUpdateDto: {
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
-          memories: { enabled: memoriesEnabled, duration: memoriesDuration },
+          memories: {
+            enabled: memoriesEnabled,
+            duration: memoriesDuration,
+            showTitle: memoriesShowTitle,
+            titleDuration: memoriesTitleDuration,
+            themedMemoriesEnabled: memoriesThemedEnabled,
+            notificationsEnabled: memoriesNotificationsEnabled,
+          },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
@@ -106,14 +117,47 @@
           <div class="ms-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
           </div>
-          <div class="ms-4 mt-6">
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label={$t('duration')}
-              description={$t('time_based_memories_duration')}
-              bind:value={memoriesDuration}
-            />
-          </div>
+          {#if memoriesEnabled}
+            <div class="ms-4 mt-6">
+              <SettingInputField
+                inputType={SettingInputFieldType.NUMBER}
+                label={$t('duration')}
+                description={$t('time_based_memories_duration')}
+                bind:value={memoriesDuration}
+              />
+            </div>
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('memory_show_title')}
+                subtitle={$t('memory_show_title_description')}
+                bind:checked={memoriesShowTitle}
+              />
+            </div>
+            {#if memoriesShowTitle}
+              <div class="ms-4 mt-6">
+                <SettingInputField
+                  inputType={SettingInputFieldType.NUMBER}
+                  label={$t('memory_title_duration')}
+                  description={$t('memory_title_duration_description')}
+                  bind:value={memoriesTitleDuration}
+                />
+              </div>
+            {/if}
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('memory_themed_enabled')}
+                subtitle={$t('memory_themed_enabled_description')}
+                bind:checked={memoriesThemedEnabled}
+              />
+            </div>
+            <div class="ms-4 mt-6">
+              <SettingSwitch
+                title={$t('memory_notifications_enabled')}
+                subtitle={$t('memory_notifications_enabled_description')}
+                bind:checked={memoriesNotificationsEnabled}
+              />
+            </div>
+          {/if}
         </SettingAccordion>
 
         <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>

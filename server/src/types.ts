@@ -486,6 +486,8 @@ export type MaintenanceModeState = { isMaintenanceMode: true; secret: string } |
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
+  /** themed memories have already been created through this date */
+  lastThemedMemoryDate?: string;
 };
 export type MediaLocation = { location: string };
 
@@ -513,6 +515,10 @@ export interface UserPreferences {
   memories: {
     enabled: boolean;
     duration: number;
+    showTitle: boolean;
+    titleDuration: number;
+    themedMemoriesEnabled: boolean;
+    notificationsEnabled: boolean;
   };
   people: {
     enabled: boolean;

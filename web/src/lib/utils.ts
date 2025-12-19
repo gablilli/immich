@@ -335,6 +335,31 @@ export const memoryLaneTitle = derived(t, ($t) => {
       return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
     }
 
+    // Handle themed memories (pets, nature, moments)
+    if (memory.type === MemoryType.Pets || memory.type === MemoryType.Nature || memory.type === MemoryType.Moments) {
+      const theme = (memory.data as { theme?: string }).theme;
+      if (theme) {
+        return theme;
+      }
+      // Fallback to translated type names
+      switch (memory.type) {
+        case MemoryType.Pets: {
+          return $t('memory_pets');
+        }
+        case MemoryType.Nature: {
+          return $t('memory_nature');
+        }
+        case MemoryType.Moments: {
+          return $t('memory_moments');
+        }
+      }
+    }
+
+    // Handle "Remember this day?" memories
+    if (memory.type === MemoryType.RememberThisDay) {
+      return $t('memory_remember_this_day');
+    }
+
     return $t('unknown');
   };
 });
