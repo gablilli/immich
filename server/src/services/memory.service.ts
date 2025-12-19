@@ -73,7 +73,7 @@ export class MemoryService extends BaseService {
         }
         await this.systemMetadataRepository.set(SystemMetadataKey.MemoriesState, {
           ...state,
-          lastOnThisDayDate: state?.lastOnThisDayDate,
+          lastOnThisDayDate: state?.lastOnThisDayDate ?? today.toISO()!,
           lastThemedMemoryDate: today.toISO(),
         });
       }

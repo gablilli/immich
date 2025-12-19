@@ -31,12 +31,26 @@ class MemoryPage extends HookConsumerWidget {
     final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
     const bgColor = Colors.black;
     final currentAsset = useState<Asset?>(null);
+    // Memory title overlay visibility state
+    final showTitleOverlay = useState(true);
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
 
     /// The main vertically scrolling page controller with each list of memories
     final memoryPageController = usePageController(initialPage: memoryIndex);
+
+    // Timer to hide the title overlay after 5 seconds
+    useEffect(() {
+      if (showTitleOverlay.value) {
+        Future.delayed(const Duration(seconds: 5), () {
+          if (context.mounted) {
+            showTitleOverlay.value = false;
+          }
+        });
+      }
+      return null;
+    }, [currentMemoryIndex.value]);
 
     useEffect(() {
       // Memories is an immersive activity
@@ -204,6 +218,8 @@ class MemoryPage extends HookConsumerWidget {
               if (pageNumber < memories.length) {
                 currentMemoryIndex.value = pageNumber;
                 currentMemory.value = memories[pageNumber];
+                // Show title overlay when navigating to a new memory
+                showTitleOverlay.value = true;
               }
 
               currentAssetPage.value = 0;
@@ -312,6 +328,34 @@ class MemoryPage extends HookConsumerWidget {
                             bottom: 24,
                             right: 32,
                             child: Icon(Icons.videocam_outlined, color: Colors.grey[200]),
+                          ),
+                        // Memory title overlay banner
+                        if (showTitleOverlay.value)
+                          Positioned(
+                            top: 48,
+                            left: 0,
+                            right: 0,
+                            child: AnimatedOpacity(
+                              opacity: showTitleOverlay.value ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 500),
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    memories[mIndex].title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                       ],
                     ),
