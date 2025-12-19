@@ -4,11 +4,30 @@ import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
+import {
+  DatabaseLock,
+  JobName,
+  MemoryType,
+  NotificationLevel,
+  NotificationType,
+  Permission,
+  QueueName,
+  SystemMetadataKey,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { isSmartSearchEnabled } from 'src/utils/misc';
+import { getPreferences } from 'src/utils/preferences';
 
 const DAYS = 3;
+const MIN_THEMED_MEMORY_ASSETS = 5;
+
+/** Themed memory configurations for smart search based memories */
+const THEMED_MEMORY_CONFIGS = [
+  { type: MemoryType.Pets, query: 'cat dog pet animal', theme: 'Miao' },
+  { type: MemoryType.Nature, query: 'nature wildlife forest mountain landscape', theme: 'Wild Nature' },
+  { type: MemoryType.Moments, query: 'celebration party happy smile joy', theme: 'Moments to Relive' },
+];
 
 @Injectable()
 export class MemoryService extends BaseService {
@@ -39,6 +58,25 @@ export class MemoryService extends BaseService {
           lastOnThisDayDate: target.toISO(),
         });
       }
+
+      // Create themed memories (pets, nature, moments) once per week
+      const today = DateTime.utc().startOf('day');
+      const lastThemedMemoryDate = state?.lastThemedMemoryDate
+        ? DateTime.fromISO(state.lastThemedMemoryDate)
+        : today.minus({ days: 7 });
+
+      if (today.diff(lastThemedMemoryDate, 'days').days >= 7) {
+        try {
+          await Promise.all(users.map((owner) => this.createThemedMemories(owner)));
+        } catch (error) {
+          this.logger.error(`Failed to create themed memories: ${error}`);
+        }
+        await this.systemMetadataRepository.set(SystemMetadataKey.MemoriesState, {
+          ...state,
+          lastOnThisDayDate: state?.lastOnThisDayDate,
+          lastThemedMemoryDate: today.toISO(),
+        });
+      }
     });
   }
 
@@ -61,6 +99,85 @@ export class MemoryService extends BaseService {
         ),
       ),
     );
+  }
+
+  /**
+   * Creates themed memories based on smart search for pets, nature, moments, etc.
+   * These memories are grouped by theme rather than by date.
+   */
+  private async createThemedMemories(owner: { id: string; metadata: unknown[] }) {
+    const preferences = getPreferences(owner.metadata as any);
+    if (!preferences.memories.themedMemoriesEnabled) {
+      return;
+    }
+
+    const { machineLearning } = await this.getConfig({ withCache: false });
+    if (!isSmartSearchEnabled(machineLearning)) {
+      this.logger.debug('Smart search not enabled, skipping themed memories');
+      return;
+    }
+
+    const today = DateTime.utc().startOf('day');
+    const showAt = today.toISO();
+    const hideAt = today.plus({ days: 7 }).endOf('day').toISO();
+
+    for (const config of THEMED_MEMORY_CONFIGS) {
+      try {
+        // Use smart search to find relevant assets
+        const embedding = await this.machineLearningRepository.encodeText(config.query, {
+          modelName: machineLearning.clip.modelName,
+        });
+
+        const { items } = await this.searchRepository.searchSmart(
+          { page: 1, size: 20 },
+          {
+            embedding,
+            userIds: [owner.id],
+          },
+        );
+
+        if (items.length < MIN_THEMED_MEMORY_ASSETS) {
+          continue;
+        }
+
+        const memory = await this.memoryRepository.create(
+          {
+            ownerId: owner.id,
+            type: config.type,
+            data: { theme: config.theme, query: config.query },
+            memoryAt: today.toISO()!,
+            showAt,
+            hideAt,
+          },
+          new Set(items.map(({ id }) => id)),
+        );
+
+        // Create notification for new memory if enabled
+        if (preferences.memories.notificationsEnabled) {
+          await this.createMemoryNotification(owner.id, memory.id, config.theme);
+        }
+      } catch (error) {
+        this.logger.error(`Failed to create themed memory ${config.type} for user ${owner.id}: ${error}`);
+      }
+    }
+  }
+
+  /**
+   * Creates a notification for a new memory
+   */
+  private async createMemoryNotification(userId: string, memoryId: string, theme: string) {
+    try {
+      await this.notificationRepository.create({
+        userId,
+        type: NotificationType.NewMemory,
+        level: NotificationLevel.Info,
+        title: 'New Memory for You',
+        description: `A new memory "${theme}" is waiting for you`,
+        data: { memoryId },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to create memory notification: ${error}`);
+    }
   }
 
   @OnJob({ name: JobName.MemoryCleanup, queue: QueueName.BackgroundTask })

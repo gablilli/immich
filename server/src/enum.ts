@@ -71,6 +71,14 @@ export enum EntityType {
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
+  /** themed memories grouped by pet photos (cats, dogs, etc.) */
+  Pets = 'pets',
+  /** themed memories grouped by nature/wildlife photos */
+  Nature = 'nature',
+  /** themed memories of special moments to relive */
+  Moments = 'moments',
+  /** reminder style: "Remember this day?" memories */
+  RememberThisDay = 'remember_this_day',
 }
 
 export enum AssetOrderWithRandom {
@@ -792,6 +800,7 @@ export enum NotificationType {
   SystemMessage = 'SystemMessage',
   AlbumInvite = 'AlbumInvite',
   AlbumUpdate = 'AlbumUpdate',
+  NewMemory = 'NewMemory',
   Custom = 'Custom',
 }
 

@@ -19,6 +19,25 @@ class MemoriesUpdate {
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   duration?: number;
+
+  /** Show memory title overlay when viewing memory */
+  @ValidateBoolean({ optional: true })
+  showTitle?: boolean;
+
+  /** Duration in seconds to show the memory title overlay (default: 5) */
+  @Optional()
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
+  titleDuration?: number;
+
+  /** Enable themed memories (pets, nature, moments) */
+  @ValidateBoolean({ optional: true })
+  themedMemoriesEnabled?: boolean;
+
+  /** Enable notifications for new memories */
+  @ValidateBoolean({ optional: true })
+  notificationsEnabled?: boolean;
 }
 
 class RatingsUpdate {
@@ -175,6 +194,19 @@ class MemoriesResponse {
 
   @ApiProperty({ type: 'integer' })
   duration: number = 5;
+
+  /** Show memory title overlay when viewing memory */
+  showTitle: boolean = true;
+
+  /** Duration in seconds to show the memory title overlay */
+  @ApiProperty({ type: 'integer' })
+  titleDuration: number = 5;
+
+  /** Enable themed memories (pets, nature, moments) */
+  themedMemoriesEnabled: boolean = true;
+
+  /** Enable notifications for new memories */
+  notificationsEnabled: boolean = true;
 }
 
 class FoldersResponse {

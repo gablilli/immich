@@ -71,6 +71,9 @@
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
+  /** Controls visibility of memory title overlay banner */
+  let showTitleOverlay = $state(true);
+  let titleOverlayTimeout: ReturnType<typeof setTimeout> | undefined = $state(undefined);
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
@@ -247,6 +250,20 @@
       setProgressDuration(current.asset);
     }
     playerInitialized = false;
+
+    // Show memory title overlay when entering a new memory
+    if ($preferences.memories.showTitle && current) {
+      showTitleOverlay = true;
+      // Clear any existing timeout
+      if (titleOverlayTimeout) {
+        clearTimeout(titleOverlayTimeout);
+      }
+      // Hide the title after the configured duration
+      const titleDuration = ($preferences.memories.titleDuration || 5) * 1000;
+      titleOverlayTimeout = setTimeout(() => {
+        showTitleOverlay = false;
+      }, titleDuration);
+    }
   };
 
   const resetAndPlay = () => {
@@ -488,6 +505,22 @@
                 <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
               {/if}
             {/key}
+
+            <!-- MEMORY TITLE OVERLAY BANNER -->
+            {#if $preferences.memories.showTitle && showTitleOverlay}
+              <div
+                class="absolute top-0 start-0 end-0 z-10 flex justify-center items-start pt-4 pointer-events-none"
+                class:opacity-0={!showTitleOverlay}
+                class:opacity-100={showTitleOverlay}
+                style="transition: opacity 0.5s ease-in-out;"
+              >
+                <div class="memory-title-banner bg-black/50 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg">
+                  <p class="text-white text-xl font-semibold text-center">
+                    {$memoryLaneTitle(current.memory)}
+                  </p>
+                </div>
+              </div>
+            {/if}
 
             <div
               class="absolute bottom-0 end-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2 dark"

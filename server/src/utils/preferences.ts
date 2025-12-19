@@ -17,6 +17,10 @@ const getDefaultPreferences = (): UserPreferences => {
     memories: {
       enabled: true,
       duration: 5,
+      showTitle: true,
+      titleDuration: 5,
+      themedMemoriesEnabled: true,
+      notificationsEnabled: true,
     },
     people: {
       enabled: true,

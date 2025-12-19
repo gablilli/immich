@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
+import { IsInt, IsObject, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { Memory } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -45,7 +45,32 @@ class OnThisDayDto {
   year!: number;
 }
 
-type MemoryData = OnThisDayDto;
+class ThemedMemoryDto {
+  /** Theme name for display, e.g., "Miao", "Wild Nature", "Moments to Relive" */
+  @IsString()
+  theme!: string;
+
+  /** Optional search query used to generate this memory */
+  @IsString()
+  @Optional()
+  query?: string;
+}
+
+class RememberThisDayDto {
+  @IsInt()
+  @IsPositive()
+  year!: number;
+
+  /** Month of the year (1-12) */
+  @IsInt()
+  month!: number;
+
+  /** Day of the month (1-31) */
+  @IsInt()
+  day!: number;
+}
+
+type MemoryData = OnThisDayDto | ThemedMemoryDto | RememberThisDayDto;
 
 export class MemoryUpdateDto extends MemoryBaseDto {
   @ValidateDate({ optional: true })
@@ -62,6 +87,14 @@ export class MemoryCreateDto extends MemoryBaseDto {
     switch (options?.object.type) {
       case MemoryType.OnThisDay: {
         return OnThisDayDto;
+      }
+      case MemoryType.Pets:
+      case MemoryType.Nature:
+      case MemoryType.Moments: {
+        return ThemedMemoryDto;
+      }
+      case MemoryType.RememberThisDay: {
+        return RememberThisDayDto;
       }
 
       default: {

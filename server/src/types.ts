@@ -513,6 +513,10 @@ export interface UserPreferences {
   memories: {
     enabled: boolean;
     duration: number;
+    showTitle: boolean;
+    titleDuration: number;
+    themedMemoriesEnabled: boolean;
+    notificationsEnabled: boolean;
   };
   people: {
     enabled: boolean;
