@@ -46,7 +46,7 @@ class OnThisDayDto {
 }
 
 class ThemedMemoryDto {
-  /** Theme name for display, e.g., "Miao", "Wild Nature", "Moments to Relive" */
+  /** Theme name for display (e.g., themed memory titles like pets, nature, moments) */
   @IsString()
   theme!: string;
 

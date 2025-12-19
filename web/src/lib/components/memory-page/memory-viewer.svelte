@@ -509,10 +509,8 @@
             <!-- MEMORY TITLE OVERLAY BANNER -->
             {#if $preferences.memories.showTitle && showTitleOverlay}
               <div
-                class="absolute top-0 start-0 end-0 z-10 flex justify-center items-start pt-4 pointer-events-none"
-                class:opacity-0={!showTitleOverlay}
+                class="absolute top-0 start-0 end-0 z-10 flex justify-center items-start pt-4 pointer-events-none transition-opacity duration-500"
                 class:opacity-100={showTitleOverlay}
-                style="transition: opacity 0.5s ease-in-out;"
               >
                 <div class="memory-title-banner bg-black/50 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg">
                   <p class="text-white text-xl font-semibold text-center">

@@ -40,10 +40,12 @@ class MemoryPage extends HookConsumerWidget {
     /// The main vertically scrolling page controller with each list of memories
     final memoryPageController = usePageController(initialPage: memoryIndex);
 
-    // Timer to hide the title overlay after 5 seconds
+    // Timer to hide the title overlay after configured duration
+    // TODO: Fetch titleDuration from user preferences when available
+    const titleDuration = 5; // Default 5 seconds
     useEffect(() {
       if (showTitleOverlay.value) {
-        Future.delayed(const Duration(seconds: 5), () {
+        Future.delayed(Duration(seconds: titleDuration), () {
           if (context.mounted) {
             showTitleOverlay.value = false;
           }

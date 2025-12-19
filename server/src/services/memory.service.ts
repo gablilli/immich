@@ -171,9 +171,9 @@ export class MemoryService extends BaseService {
         userId,
         type: NotificationType.NewMemory,
         level: NotificationLevel.Info,
-        title: 'New Memory for You',
-        description: `A new memory "${theme}" is waiting for you`,
-        data: { memoryId },
+        title: 'memory_new_notification_title',
+        description: theme,
+        data: { memoryId, theme },
       });
     } catch (error) {
       this.logger.error(`Failed to create memory notification: ${error}`);
